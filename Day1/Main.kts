@@ -21,9 +21,9 @@ inputString.split("\\R".toRegex()).toTypedArray().forEach { line ->
 
 val sortedResults = results.sortedBy { it.total }.reversed()
 var grandTotal = 0
-sortedResults.subList(0,3).forEach {
+sortedResults.subList(0, 3).forEach {
     grandTotal += it.total
 }
 
-println(sortedResults.subList(0,3))
+println(sortedResults.subList(0, 3))
 println(grandTotal)
