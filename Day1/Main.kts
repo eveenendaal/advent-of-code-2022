@@ -1,7 +1,7 @@
 import java.io.File
 
+// Read Input
 val inputStream = File("input.txt").inputStream()
-
 val inputString = inputStream.bufferedReader().use { it.readText() }
 
 data class Elf(val number: Int, val total: Int)
