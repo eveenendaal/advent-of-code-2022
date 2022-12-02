@@ -20,7 +20,7 @@ enum class Result(var score: Int) {
 data class Round(val action: Action, val reaction: Action, val result: Result)
 
 fun calcResult(action: Action, reaction: Action): Result {
-    return when (action) {
+    when (action) {
         Action.Rock -> {
             return when (reaction) {
                 Action.Rock -> Result.Draw
@@ -48,7 +48,7 @@ fun calcResult(action: Action, reaction: Action): Result {
 }
 
 fun calcAction(action: Action, result: Result): Action {
-    return when (action) {
+    when (action) {
         Action.Rock -> {
             return when (result) {
                 Result.Win -> Action.Paper
@@ -80,21 +80,21 @@ var total = 0
 inputStrings
     .filter { it.isNotEmpty() }
     .map {
-        var row = it.split(" ")
+        val row = it.split(" ")
 
-        var action = when (row[0]) {
+        val action = when (row[0]) {
             "A" -> Action.Rock
             "B" -> Action.Paper
             "C" -> Action.Scissors
             else -> throw RuntimeException("Missing mapping")
         }
-        var reaction = when (row[1]) {
+        val reaction = when (row[1]) {
             "X" -> Action.Rock
             "Y" -> Action.Paper
             "Z" -> Action.Scissors
             else -> throw RuntimeException("Missing mapping")
         }
-        var result = when (row[1]) {
+        val result = when (row[1]) {
             "X" -> Result.Lose
             "Y" -> Result.Draw
             "Z" -> Result.Win
