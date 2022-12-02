@@ -11,31 +11,65 @@ enum class Action(var score: Int) {
     Scissors(3)
 }
 
-data class Row(val input: Action, val output: Action)
+enum class Result(var score: Int) {
+    Win(6),
+    Lose(0),
+    Draw(3)
+}
 
-fun win(row: Row): Int {
-    return when (row.input) {
+data class Round(val action: Action, val reaction: Action?, val result: Result?)
+
+fun calcResult(action: Action, reaction: Action): Result {
+    return when (action) {
         Action.Rock -> {
-            return when (row.output) {
-                Action.Rock -> 3
-                Action.Paper -> 6
-                Action.Scissors -> 0
+            return when (reaction) {
+                Action.Rock -> Result.Draw
+                Action.Paper -> Result.Win
+                Action.Scissors -> Result.Lose
             }
         }
 
         Action.Paper -> {
-            return when (row.output) {
-                Action.Rock -> 0
-                Action.Paper -> 3
-                Action.Scissors -> 6
+            return when (reaction) {
+                Action.Rock -> Result.Lose
+                Action.Paper -> Result.Draw
+                Action.Scissors -> Result.Win
             }
         }
 
         Action.Scissors -> {
-            return when (row.output) {
-                Action.Rock -> 6
-                Action.Paper -> 0
-                Action.Scissors -> 3
+            return when (reaction) {
+                Action.Rock -> Result.Win
+                Action.Paper -> Result.Lose
+                Action.Scissors -> Result.Draw
+            }
+        }
+    }
+}
+
+fun calcAction(action: Action, result: Result): Action {
+    return when (action) {
+        Action.Rock -> {
+            return when (result) {
+                Result.Win -> Action.Paper
+                Result.Lose -> Action.Scissors
+                Result.Draw -> Action.Rock
+            }
+        }
+
+        Action.Paper -> {
+            return when (result) {
+                Result.Win -> Action.Scissors
+                Result.Lose -> Action.Rock
+                Result.Draw -> Action.Paper
+            }
+        }
+
+        Action.Scissors -> {
+            return when (result) {
+                Result.Win -> Action.Rock
+                Result.Lose -> Action.Paper
+                Result.Draw -> Action.Scissors
             }
         }
     }
@@ -48,25 +82,25 @@ inputStrings
     .map {
         var row = it.split(" ")
 
-        var input = when (row[0]) {
+        var action = when (row[0]) {
             "A" -> Action.Rock
             "B" -> Action.Paper
             "C" -> Action.Scissors
             else -> throw RuntimeException("Missing mapping")
         }
-        var output = when (row[1]) {
+        var reaction = when (row[1]) {
             "X" -> Action.Rock
             "Y" -> Action.Paper
             "Z" -> Action.Scissors
             else -> throw RuntimeException("Missing mapping")
         }
-        Row(input, output)
+        Round(action, reaction, null)
     }
     .forEach {
-        total += it.output.score
-        total += win(it)
+        total += it.reaction!!.score
+        total += calcResult(it.action, it.reaction!!).score
 
         println(it)
-        println(win(it))
+        println(calcResult(it.action, it.reaction!!))
         println(total)
     }
