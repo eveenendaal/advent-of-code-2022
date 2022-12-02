@@ -17,7 +17,7 @@ enum class Result(var score: Int) {
     Draw(3)
 }
 
-data class Round(val action: Action, val reaction: Action?, val result: Result?)
+data class Round(val action: Action, val reaction: Action, val result: Result)
 
 fun calcResult(action: Action, reaction: Action): Result {
     return when (action) {
@@ -94,13 +94,23 @@ inputStrings
             "Z" -> Action.Scissors
             else -> throw RuntimeException("Missing mapping")
         }
-        Round(action, reaction, null)
+        var result = when (row[1]) {
+            "X" -> Result.Lose
+            "Y" -> Result.Draw
+            "Z" -> Result.Win
+            else -> throw RuntimeException("Missing mapping")
+        }
+        Round(action, reaction, result)
     }
     .forEach {
-        total += it.reaction!!.score
-        total += calcResult(it.action, it.reaction!!).score
+        val action = it.action
+        val result = it.result
+        val reaction = calcAction(action, result)
+
+        total += reaction.score
+        total += calcResult(action, reaction).score
 
         println(it)
-        println(calcResult(it.action, it.reaction!!))
+        println("$action -> $reaction = $result")
         println(total)
     }
