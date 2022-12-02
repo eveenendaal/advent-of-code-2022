@@ -21,56 +21,44 @@ data class Round(val action: Action, val reaction: Action, val result: Result)
 
 fun calcResult(action: Action, reaction: Action): Result {
     when (action) {
-        Action.Rock -> {
-            return when (reaction) {
-                Action.Rock -> Result.Draw
-                Action.Paper -> Result.Win
-                Action.Scissors -> Result.Lose
-            }
+        Action.Rock -> return when (reaction) {
+            Action.Rock -> Result.Draw
+            Action.Paper -> Result.Win
+            Action.Scissors -> Result.Lose
         }
 
-        Action.Paper -> {
-            return when (reaction) {
-                Action.Rock -> Result.Lose
-                Action.Paper -> Result.Draw
-                Action.Scissors -> Result.Win
-            }
+        Action.Paper -> return when (reaction) {
+            Action.Rock -> Result.Lose
+            Action.Paper -> Result.Draw
+            Action.Scissors -> Result.Win
         }
 
-        Action.Scissors -> {
-            return when (reaction) {
-                Action.Rock -> Result.Win
-                Action.Paper -> Result.Lose
-                Action.Scissors -> Result.Draw
-            }
+        Action.Scissors -> return when (reaction) {
+            Action.Rock -> Result.Win
+            Action.Paper -> Result.Lose
+            Action.Scissors -> Result.Draw
         }
     }
 }
 
 fun calcAction(action: Action, result: Result): Action {
     when (action) {
-        Action.Rock -> {
-            return when (result) {
-                Result.Win -> Action.Paper
-                Result.Lose -> Action.Scissors
-                Result.Draw -> Action.Rock
-            }
+        Action.Rock -> return when (result) {
+            Result.Win -> Action.Paper
+            Result.Lose -> Action.Scissors
+            Result.Draw -> Action.Rock
         }
 
-        Action.Paper -> {
-            return when (result) {
-                Result.Win -> Action.Scissors
-                Result.Lose -> Action.Rock
-                Result.Draw -> Action.Paper
-            }
+        Action.Paper -> return when (result) {
+            Result.Win -> Action.Scissors
+            Result.Lose -> Action.Rock
+            Result.Draw -> Action.Paper
         }
 
-        Action.Scissors -> {
-            return when (result) {
-                Result.Win -> Action.Rock
-                Result.Lose -> Action.Paper
-                Result.Draw -> Action.Scissors
-            }
+        Action.Scissors -> return when (result) {
+            Result.Win -> Action.Rock
+            Result.Lose -> Action.Paper
+            Result.Draw -> Action.Scissors
         }
     }
 }
@@ -110,7 +98,6 @@ inputStrings
         total += reaction.score
         total += calcResult(action, reaction).score
 
-        println(it)
         println("$action -> $reaction = $result")
         println(total)
     }

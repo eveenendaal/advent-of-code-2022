@@ -1,15 +1,15 @@
 import java.io.File
 
-// Read Input
-val inputStream = File("input.txt").inputStream()
-val inputString = inputStream.bufferedReader().use { it.readText() }
+val input = File("input.txt").inputStream().bufferedReader()
+    .use { it.readText() }
+    .split("\\R".toRegex()).toTypedArray()
 
 data class Elf(val number: Int, val total: Int)
 
 var elfNumber = 1
 var total = 0
 var results = listOf<Elf>()
-inputString.split("\\R".toRegex()).toTypedArray().forEach { line ->
+input.forEach { line ->
     if (line.isEmpty()) {
         results += listOf(Elf(elfNumber, total))
         elfNumber += 1
