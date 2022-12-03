@@ -1,7 +1,7 @@
 import java.io.File
 
 // Read Input
-val inputStrings = File("test.txt").inputStream()
+val inputStrings = File("input.txt").inputStream()
     .bufferedReader().use { it.readText() }
     .split("\\R".toRegex()).toTypedArray()
 
@@ -49,7 +49,3 @@ inputStrings
 
 
 println(sacks.sumOf { it.value })
-sacks.sortBy { it.letter }
-println(sacks)
-
-
