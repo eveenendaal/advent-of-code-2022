@@ -5,7 +5,7 @@ data class Crate(var letter: String)
 
 var stacks: List<Stack> = emptyList()
 
-val inputRanges = File("example-state.txt").inputStream()
+val inputRanges = File("state.txt").inputStream()
     .bufferedReader().use { it.readText() }
     .split("\\R".toRegex()).toTypedArray()
     .filter { it.isNotEmpty() }
@@ -28,7 +28,7 @@ val inputRanges = File("example-state.txt").inputStream()
             }
     }
 
-val inputRanges = File("example-input.txt").inputStream()
+val inputRanges = File("input.txt").inputStream()
     .bufferedReader().use { it.readText() }
     .split("\\R".toRegex()).toTypedArray()
     .filter { it.isNotEmpty() }
@@ -45,9 +45,13 @@ val inputRanges = File("example-input.txt").inputStream()
             repeat((1..moveCount).count()) {
                 val crate = startColumn.crates.first()
                 startColumn.crates -= crate
-                endColumn.crates += crate
+                endColumn.crates = listOf(crate) + endColumn.crates
             }
         }
     }
 
 println(stacks)
+
+stacks.forEach {
+    print(it.crates.first().letter.replace("[^A-Z]".toRegex(), ""))
+}
