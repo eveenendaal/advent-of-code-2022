@@ -53,18 +53,16 @@ fun printfolder(folder: MyFolder, level: Int): Int {
     val size = folder.files.sumOf { it.size }
     var total = size
 
-    println("$space${folder.name} ($size)")
+
     folder.files.forEach {
         // println("$space- ${it.name} (${it.size})")
     }
 
     folder.folders.forEach {
-        val nextFolderSize = printfolder(it, level + 2)
-        if (nextFolderSize < 100000) {
-            total += nextFolderSize
-        }
+        total += printfolder(it, level + 2)
     }
     folders += FolderSummary(folder.name, total)
+    println("$space${folder.name} ($total)")
 
     return total
 }
