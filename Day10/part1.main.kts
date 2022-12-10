@@ -53,7 +53,7 @@ while (inputs.hasNext() || nextAction != null) {
 
     // Check for input
     when (input?.operation) {
-        Operation.ADDX -> nextAction = input!!
+        Operation.ADDX -> nextAction = input
         else -> {}
     }
 
