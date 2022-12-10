@@ -1,20 +1,21 @@
 import java.io.File
-import kotlin.math.absoluteValue
-import kotlin.math.max
 
 enum class Direction(val value: String) {
     Left("L"),
     Right("R"),
     Down("D"),
-    Up("U")
-
+    Up("U"),
+    UpLeft("UL"),
+    UpRight("UR"),
+    DownLeft("DL"),
+    DownRight("DR")
 }
 
-data class Position(var x: Int = 0, var y: Int = 0)
+data class Position(var number: Int, var x: Int = 0, var y: Int = 0)
 
 data class Entry(val direction: Direction, val count: Int)
 
-val inputs = File("test.txt").inputStream()
+val inputs = File("input.txt").inputStream()
     .bufferedReader().use { it.readText() }
     .split("\\R".toRegex()).toTypedArray()
     .filter { it.isNotEmpty() }
@@ -23,54 +24,101 @@ val inputs = File("test.txt").inputStream()
         Entry(Direction.values().first { it.value == parts[0] }, parts[1].toInt())
     }
 
-val head = Position()
+val head = Position(0)
 
-fun calculateDistance(p1: Position, p2: Position): Int {
-    return max((p1.x - p2.x).absoluteValue, (p1.y - p2.y).absoluteValue)
-}
-
-fun adjustPosition(p1: Position, p2: Position, direction: Direction) {
-    var distance = calculateDistance(p1, p2)
-    if (distance > 1) {
-
-        when (direction) {
-            Direction.Left -> {
-                p2.x -= 1
-                p2.y = p1.y
-            }
-
-            Direction.Right -> {
-                p2.x += 1
-                p2.y = p1.y
-            }
-
-            Direction.Down -> {
-                p2.y -= 1
-                p2.x = p1.x
-            }
-
-            Direction.Up -> {
-                p2.y += 1
-                p2.x = p1.x
-            }
+fun movePoint(point: Position, direction: Direction) {
+    when (direction) {
+        Direction.Left -> point.x -= 1
+        Direction.Right -> point.x += 1
+        Direction.Down -> point.y -= 1
+        Direction.Up -> point.y += 1
+        Direction.UpLeft -> {
+            point.x -= 1
+            point.y += 1
         }
 
-        distance = calculateDistance(p1, p2)
-        if (distance > 1) {
-            throw RuntimeException("Distance Not Fixed (Head: $p1 Tail: $p2 Direction: $direction)")
+        Direction.UpRight -> {
+            point.x += 1
+            point.y += 1
         }
 
+        Direction.DownLeft -> {
+            point.x -= 1
+            point.y -= 1
+        }
+
+        Direction.DownRight -> {
+            point.x += 1
+            point.y -= 1
+        }
     }
 }
 
-fun printGrid(head: Position, points: List<Position>) {
-    val allPoints = listOf(head) + points
-    val maxX = allPoints.maxOf { it.x }
-    val maxY = allPoints.maxOf { it.y }
+fun adjustPosition(p1: Position, p2: Position) {
+    val xdiff = p1.x - p2.x
+    val ydiff = p1.y - p2.y
 
-    (0..maxY).forEach { y ->
-        val line = (0..maxX).map { x ->
-            var result = "."
+    val action: Direction? = when (xdiff) {
+        -2 -> {
+            when (ydiff) {
+                -2, -1 -> Direction.DownLeft
+                0 -> Direction.Left
+                1, 2 -> Direction.UpLeft
+                else -> null
+            }
+        }
+
+        -1 -> {
+            when (ydiff) {
+                -2 -> Direction.DownLeft
+                2 -> Direction.UpLeft
+                else -> null
+            }
+        }
+
+        0 -> {
+            when (ydiff) {
+                -2 -> Direction.Down
+                2 -> Direction.Up
+                else -> null
+            }
+        }
+
+        1 -> {
+            when (ydiff) {
+                -2 -> Direction.DownRight
+                2 -> Direction.UpRight
+                else -> null
+            }
+        }
+
+        2 -> {
+            when (ydiff) {
+                -2, -1 -> Direction.DownRight
+                0 -> Direction.Right
+                1, 2 -> Direction.UpRight
+                else -> null
+            }
+        }
+
+        else -> null
+    }
+
+    if (action != null) {
+        movePoint(p2, action)
+    }
+}
+
+fun printGrid(allPoints: List<Position>, tail: List<Position>) {
+    val allValues = allPoints.map { it.x } + allPoints.map { it.y }
+    val min = allValues.min()
+    val max = allValues.max()
+
+    println(allPoints)
+
+    (min..max).reversed().forEach { y ->
+        val line = (min..max).map { x ->
+            var result: String? = null
             val position = allPoints.firstOrNull { it.x == x && it.y == y }
             if (position != null) {
                 val index = allPoints.indexOf(position)
@@ -80,40 +128,44 @@ fun printGrid(head: Position, points: List<Position>) {
                     "$index"
                 }
             }
-            result
+
+            if (result == null) {
+                if (x == 0 && y == 0) {
+                    result = "s"
+                } else if (tail.any { it.x == x && it.y == y }) {
+                    result = "#"
+                }
+            }
+
+            result ?: "."
         }
         println(line)
     }
+    println()
 }
 
-val points = (1..9).map { Position() }
+val points = (1..9).map { Position(it) }
 var tailHistory = setOf(points.last().copy())
 
 inputs.forEach { input ->
     (1..input.count).forEach {
         // Move Head
-        when (input.direction) {
-            Direction.Left -> head.x -= 1
-            Direction.Right -> head.x += 1
-            Direction.Down -> head.y -= 1
-            Direction.Up -> head.y += 1
-        }
-
+        movePoint(head, input.direction)
         val pointIterator = points.iterator()
 
-        var lastPoint = pointIterator.next()
-        adjustPosition(head, lastPoint, input.direction)
+        var lastPoint = head
+        var nextPoint: Position?
         while (pointIterator.hasNext()) {
-            var nextPoint = pointIterator.next()
-            adjustPosition(lastPoint, nextPoint, input.direction)
+            nextPoint = pointIterator.next()
+            adjustPosition(lastPoint, nextPoint)
             lastPoint = nextPoint
         }
+        println()
 
         // Result
         tailHistory += points.last().copy()
-
-        printGrid(head, points)
     }
 }
+printGrid(listOf(head) + points, tailHistory.toList())
 
 println(tailHistory.size)
