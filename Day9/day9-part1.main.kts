@@ -14,7 +14,7 @@ data class Position(var x: Int = 0, var y: Int = 0)
 
 data class Entry(val direction: Direction, val count: Int)
 
-val inputs = File("input.txt").inputStream()
+val inputs = File("day9-input.txt").inputStream()
     .bufferedReader().use { it.readText() }
     .split("\\R".toRegex()).toTypedArray()
     .filter { it.isNotEmpty() }

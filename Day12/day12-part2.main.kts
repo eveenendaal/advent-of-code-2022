@@ -15,7 +15,7 @@ class Map(var grid: List<List<Point>>) {
 fun parseInput(): List<List<Point>> {
     val letters = "SabcdefghijklmnopqrstuvwxyzE"
     var y = 0
-    return File("input.txt").inputStream()
+    return File("day12-input.txt").inputStream()
         .bufferedReader().use { it.readText() }
         .split("\\R".toRegex()).toTypedArray()
         .filter { it.isNotEmpty() }
@@ -34,7 +34,6 @@ fun parseInput(): List<List<Point>> {
 val map = Map(parseInput())
 
 val allPoints = map.grid.flatten()
-val start = allPoints.minBy { it.height }
 var end = allPoints.maxBy { it.height }
 
 val lookupMap = mutableMapOf<Point, List<Point>>()
@@ -50,7 +49,7 @@ allPoints.map { nextPoint ->
     lookupMap.put(nextPoint, points)
 }
 
-fun findShortestPath(): Int? {
+fun findShortestPath(start: Point): Int {
     val toVisit: MutableList<Point> = listOf(start).toMutableList()
 
     var moves = 0
@@ -64,8 +63,6 @@ fun findShortestPath(): Int? {
             }
         }
 
-        println(moves)
-
         if (nextToVisit.any { it.height == end.height }) {
             return moves
         } else {
@@ -77,5 +74,11 @@ fun findShortestPath(): Int? {
     return Int.MAX_VALUE
 }
 
-val result = findShortestPath()
-println(result)
+val value = allPoints.filter { it.height == 1 }.minOfOrNull {aPoint ->
+    allPoints.forEach { it.visited = false }
+    findShortestPath(aPoint)
+}
+
+println(value)
+
+

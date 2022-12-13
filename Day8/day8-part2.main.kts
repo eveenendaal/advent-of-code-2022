@@ -9,7 +9,7 @@ var columns = emptyList<Column>()
 var trees = emptyList<Tree>()
 
 var row = 0
-val inputRanges = File("input.txt").inputStream()
+val inputRanges = File("day8-input.txt").inputStream()
     .bufferedReader().use { it.readText() }
     .split("\\R".toRegex()).toTypedArray()
     .filter { it.isNotEmpty() }

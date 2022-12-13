@@ -1,17 +1,15 @@
 import java.io.File
 
-data class Item(var worryLevel: Long)
+data class Item(var worryLevel: Int)
 data class Monkey(
     var number: Int,
     var items: List<Item>,
-    val operation: (number: Long) -> Long,
-    val action: (number: Long) -> Boolean,
+    val operation: (number: Int) -> Int,
+    val action: (number: Int) -> Boolean,
     val trueMonkey: Int,
     val falseMonkey: Int,
-    var inspections: Long = 0,
+    var inspections: Int = 0,
 )
-
-var multipliers: Set<Int> = emptySet()
 
 fun parseInput(input: List<String>): List<Monkey> {
     val monkeys = emptyList<Monkey>().toMutableList()
@@ -20,8 +18,8 @@ fun parseInput(input: List<String>): List<Monkey> {
     var nextMonkeyTrue: Int? = null
     var nextMonkeyFalse: Int? = null
     var items: List<Item> = emptyList()
-    var operation: ((Long) -> Long)? = null
-    var test: ((Long) -> Boolean)? = null
+    var operation: ((Int) -> Int)? = null
+    var test: ((Int) -> Boolean)? = null
 
     input
         .map { it.trim() }
@@ -35,7 +33,7 @@ fun parseInput(input: List<String>): List<Monkey> {
                 val match = "[^0-9]+([0-9\\,\\ ]+)".toRegex().find(line)
                 items = match!!.groupValues[1].split(",")
                     .map { it.trim() }
-                    .map { Item(it.toLong()) }
+                    .map { Item(it.toInt()) }
             } else if (line.startsWith("Operation:")) {
                 // Operation
                 val equation = line.substringAfter(": new =").trim().split(" ")
@@ -45,17 +43,17 @@ fun parseInput(input: List<String>): List<Monkey> {
                 operation = when (function) {
                     "*" -> {
                         if (value == "old") {
-                            { input: Long -> input * input }
+                            { input: Int -> input * input }
                         } else {
-                            { input: Long -> input * value.toLong() }
+                            { input: Int -> input * value.toInt() }
                         }
                     }
 
                     "+" -> {
                         if (value == "old") {
-                            { input: Long -> input + input }
+                            { input: Int -> input + input }
                         } else {
-                            { input: Long -> input + value.toLong() }
+                            { input: Int -> input + value.toInt() }
                         }
                     }
 
@@ -66,8 +64,7 @@ fun parseInput(input: List<String>): List<Monkey> {
                 // Test
                 val match = "[^0-9]+([0-9\\,\\ ]+)".toRegex().find(line)
                 val value = match!!.groupValues[1].toInt()
-                multipliers += value
-                test = { input: Long -> input % value == 0L }
+                test = { input: Int -> input % value == 0 }
 
             } else if (line.startsWith("If true:")) {
                 // True Monkey
@@ -85,21 +82,18 @@ fun parseInput(input: List<String>): List<Monkey> {
     return monkeys
 }
 
-val input = File("input.txt").inputStream()
+val input = File("day11-input.txt").inputStream()
     .bufferedReader().use { it.readText() }
     .split("\\R".toRegex()).toTypedArray().asList()
 
 val monkeys = parseInput(input)
 
-val lcm = multipliers.reduce { a: Int, b: Int -> a * b }
-println(lcm)
-
 fun runRound() {
     monkeys.forEach { monkey ->
         monkey.items.forEach { item ->
             item.worryLevel = monkey.operation(item.worryLevel)
+            item.worryLevel = item.worryLevel / 3
             monkey.inspections += 1
-            item.worryLevel = item.worryLevel % lcm
             val nextMonkeyNumber = if (monkey.action(item.worryLevel)) monkey.trueMonkey else monkey.falseMonkey
             val nextMonkey = monkeys.first { it.number == nextMonkeyNumber }
             nextMonkey.items += item
@@ -115,23 +109,18 @@ fun printMonkeys() {
     println()
 }
 
-fun printInspections() {
-    monkeys.forEach {
-        println("Monkey ${it.number} -> ${it.inspections} Inspections")
-    }
-    val total = monkeys
-        .sortedBy { it.inspections }
-        .reversed()
-        .subList(0, 2)
-        .map { it.inspections }.reduce { a: Long, b: Long -> a * b }
-    println("Total $total")
+(1..20).forEach {
+    runRound()
+    println("Round $it")
+    printMonkeys()
 }
 
-(1..10000).forEach {
-    runRound()
-    if (it % 1000 == 0 || it == 1 || it == 20) {
-        println("Round $it")
-        printMonkeys()
-        printInspections()
-    }
+monkeys.forEach {
+    println("Monkey ${it.number} -> ${it.inspections} Inspections")
 }
+val total = monkeys
+    .sortedBy { it.inspections }
+    .reversed()
+    .subList(0, 2)
+    .map { it.inspections }.reduce { a: Int, b: Int -> a * b }
+println("Total $total")

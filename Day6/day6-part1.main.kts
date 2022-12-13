@@ -1,6 +1,6 @@
 import java.io.File
 
-File("input.txt").inputStream()
+File("day6-input.txt").inputStream()
     .bufferedReader().use { it.readText() }
     .split("\\R".toRegex()).toTypedArray()
     .filter { it.isNotEmpty() }

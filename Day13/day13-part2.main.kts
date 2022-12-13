@@ -6,7 +6,7 @@ fun parseInput(): List<Pair<Node, Node>> {
     val packets = emptyList<Node>().toMutableList()
     val pairs = emptyList<Pair<Node, Node>>().toMutableList()
 
-    File("input.txt").inputStream()
+    File("day13-input.txt").inputStream()
         .bufferedReader().use { it.readText() }
         .split("\\R".toRegex()).toTypedArray().asList()
         .forEach { line ->
@@ -31,7 +31,7 @@ fun parseInput(): List<Pair<Node, Node>> {
                                 packets += current!!
                                 current = null
                             } else {
-                                var parent = current!!.parent!!
+                                val parent = current!!.parent!!
                                 current!!.parent = null
                                 current = parent
                             }
@@ -70,7 +70,7 @@ fun compare(left: Any, right: Any): Boolean? {
             return false
         }
         return null
-    } else  {
+    } else {
         val leftList = if (left is Int) listOf(left) else left as List<Any>
         val rightList = if (right is Int) listOf(right) else right as List<Any>
 
@@ -106,6 +106,9 @@ fun flatten(list: List<Any>): List<Any> {
 
 var total = 0
 var count = 1
+
+var sortedPairs = listOf<List<Any>>()
+
 pairs
     .map { Pair(flatten(it.first.children), flatten(it.second.children)) }
     .forEach { pair ->
@@ -113,14 +116,46 @@ pairs
         val result = compare(pair.first, pair.second)
         if (result != false) {
             println("Pair $count) Correct Order")
+            sortedPairs += listOf(pair.first, pair.second)
             total += count
         } else {
+            sortedPairs += listOf(pair.second, pair.first)
             println("Pair $count) Wrong Order")
         }
         count += 1
         println()
     }
 
-println(total)
 
+val divider1 = listOf(listOf(2))
+val divider2 =  listOf(listOf(6))
 
+sortedPairs += listOf(divider1, divider2)
+
+var position = 0
+var positions = listOf<Int>()
+sortedPairs
+    .sortedWith { left: List<Any>, right: List<Any> ->
+        when (compare(left, right)) {
+            true -> 1
+            false -> -1
+            else -> 0
+        }
+    }
+    .reversed()
+    .forEach {
+        position += 1
+        if (it == divider1) {
+            println("Divider 1 = $position")
+            positions += position
+        }
+        if (it == divider2) {
+            println("Divider 2 = $position")
+            positions += position
+        }
+
+        // println(it)
+    }
+
+val answer = positions[0] * positions[1]
+println("$positions -> $answer")

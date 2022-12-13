@@ -5,7 +5,7 @@ data class Crate(var letter: String)
 
 var stacks: List<Stack> = emptyList()
 
-val inputRanges = File("state.txt").inputStream()
+val inputRanges = File("day5-state.txt").inputStream()
     .bufferedReader().use { it.readText() }
     .split("\\R".toRegex()).toTypedArray()
     .filter { it.isNotEmpty() }
@@ -28,7 +28,7 @@ val inputRanges = File("state.txt").inputStream()
             }
     }
 
-val inputRanges = File("input.txt").inputStream()
+val inputRanges = File("day5-input.txt").inputStream()
     .bufferedReader().use { it.readText() }
     .split("\\R".toRegex()).toTypedArray()
     .filter { it.isNotEmpty() }
@@ -42,15 +42,11 @@ val inputRanges = File("input.txt").inputStream()
             val startColumn = stacks.first { it.number == startColumnNumber }
             val endColumn = stacks.first { it.number == endColumnNumber }
 
-            if (startColumn.crates.size < moveCount) {
-                throw RuntimeException("Empty Column")
+            repeat((1..moveCount).count()) {
+                val crate = startColumn.crates.first()
+                startColumn.crates -= crate
+                endColumn.crates = listOf(crate) + endColumn.crates
             }
-
-            val crates = startColumn.crates.subList(0, moveCount)
-            crates.forEach {
-                startColumn.crates = startColumn.crates - it
-            }
-            endColumn.crates = crates + endColumn.crates
         }
     }
 

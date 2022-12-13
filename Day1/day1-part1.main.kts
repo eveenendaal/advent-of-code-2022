@@ -1,6 +1,6 @@
 import java.io.File
 
-val input = File("input.txt").inputStream().bufferedReader()
+val input = File("day1-input.txt").inputStream().bufferedReader()
     .use { it.readText() }
     .split("\\R".toRegex()).toTypedArray()
 

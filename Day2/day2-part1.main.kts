@@ -1,7 +1,7 @@
 import java.io.File
 
 // Read Input
-val inputStrings = File("input.txt").inputStream()
+val inputStrings = File("day2-input.txt").inputStream()
     .bufferedReader().use { it.readText() }
     .split("\\R".toRegex()).toTypedArray()
 

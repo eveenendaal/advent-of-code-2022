@@ -1,6 +1,6 @@
 import java.io.File
 
-val inputRanges = File("input.txt").inputStream()
+val inputRanges = File("day7-input.txt").inputStream()
     .bufferedReader().use { it.readText() }
     .split("\\R".toRegex()).toTypedArray()
     .filter { it.isNotEmpty() }
@@ -70,14 +70,12 @@ fun printfolder(folder: MyFolder, level: Int): Int {
 val total = printfolder(rootFolder, 0)
 println("Grant Total: $total")
 
-val diskTotal = 70000000
-val spaceNeeded = 30000000
-val spaceAvailable = 70000000 - total
-val toDelete = spaceNeeded - spaceAvailable
+val subfolders = folders
+    .filter { it.size > 0 }
+    .filter { it.size < 100000 }
+println(subfolders)
+println(subfolders.sumOf { it.size })
 
-val answer = folders
-    .sortedBy { it.size }
-    .filter { it.size > toDelete }
 
-println(answer)
-println(answer.first())
+
+

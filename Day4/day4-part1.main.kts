@@ -1,6 +1,6 @@
 import java.io.File
 
-val inputRanges = File("input.txt").inputStream()
+val inputRanges = File("day4-input.txt").inputStream()
     .bufferedReader().use { it.readText() }
     .split("\\R".toRegex()).toTypedArray()
     .filter { it.isNotEmpty() }
