@@ -1,22 +1,33 @@
 import java.io.File
 import kotlin.math.absoluteValue
+import kotlin.math.sign
 
-data class Point(val x: Long, val y: Long)
+data class Point(val x: Long, val y: Long, var distance: Long? = null)
+
+fun Point.distanceTo(point: Point): Long {
+    return (this.x - point.x).absoluteValue + (this.y - point.y).absoluteValue
+}
+
+fun Point.same(point: Point): Boolean {
+    return this.x == point.x && this.y == point.y
+}
+
+fun Point.lineTo(other: Point): List<Point> {
+    val xDelta = (other.x - x).sign
+    val yDelta = (other.y - y).sign
+    val steps = maxOf((x - other.x).absoluteValue, (y - other.y).absoluteValue)
+    return (1..steps).scan(this) { last, _ -> Point(last.x + xDelta, last.y + yDelta) }
+}
 
 var sensors = setOf<Point>()
 var beacons = setOf<Point>()
-var empty = setOf<Point>()
 
 var ranges = setOf<LongRange>().toMutableSet()
 
-val target = 2000000L
+val caveSize = 4000000.toLong()
 
 fun loadInput() {
     val coors = "x=([\\-0-9]+), y=([\\-0-9]+)".toRegex()
-
-    fun calcDistance(p1: Point, p2: Point): Long {
-        return (p1.x - p2.x).absoluteValue + (p1.y - p2.y).absoluteValue
-    }
 
     File("day15-input.txt").inputStream()
         .bufferedReader().use { it.readText() }
@@ -32,19 +43,20 @@ fun loadInput() {
 
             val sensor = points[0]
             val beacon = points[1]
+            sensor.distance = sensor.distanceTo(beacon)
 
-            val distance = calcDistance(sensor, beacon)
+            val distance = sensor.distanceTo(beacon)
 
             val minX = sensor.x - distance
             val maxX = sensor.x + distance
             val minY = sensor.y - distance
             val maxY = sensor.y + distance
 
-            val diff = distance - (target - sensor.y).absoluteValue
+            val diff = distance - (caveSize - sensor.y).absoluteValue
             val startX = sensor.x - diff
             val endX = sensor.x + diff
 
-            if (target in minY..maxY) {
+            if (caveSize in minY..maxY) {
                 ranges += LongRange(startX, endX)
             }
 
@@ -54,24 +66,37 @@ fun loadInput() {
 }
 
 fun printGrid() {
-    val values = sensors + beacons + empty
-    val minX = values.map { it.x }.min()
-    val maxX = values.map { it.x }.max()
-    val minY = values.map { it.y }.min()
-    val maxY = values.map { it.y }.max()
+    val minX = sensors.map { it.x }.min() - caveSize
+    val maxX = sensors.map { it.x }.max() + caveSize
+    val minY = sensors.map { it.y }.min() - caveSize
+    val maxY = sensors.map { it.y }.max() + caveSize
 
     (minY..maxY).forEach { y ->
         (minX..maxX).forEach { x ->
 
             val point = Point(x, y)
-            if (sensors.contains(point)) {
+            var isRangeOfSensor = sensors.any {
+                it.distanceTo(point) <= caveSize
+            }
+
+            var isEmpty = sensors
+                .filter { it.distanceTo(point) <= caveSize }
+                .any { it.distanceTo(point) <= it.distance!! }
+
+            if (sensors.any { it.same(point) }) {
                 print("S")
-            } else if (beacons.contains(point)) {
+            } else if (beacons.any { it.same(point) }) {
                 print("B")
-            } else if (empty.contains(point)) {
-                print("#")
+            } else if (isRangeOfSensor) {
+                if (isEmpty) {
+                    print("#")
+                } else if (point.x >= 0 && point.y >= 0 && point.x <= caveSize && point.y <= caveSize) {
+                    print(".")
+                } else {
+                    print(" ")
+                }
             } else {
-                print(".")
+                print(" ")
             }
         }
         println()
@@ -80,23 +105,25 @@ fun printGrid() {
 }
 
 loadInput()
-//printGrid()
-println(ranges.toList().reduce())
+// printGrid()
 
-fun List<LongRange>.reduce(): List<LongRange> =
-    if (this.size <= 1) {
-        this
-    } else {
-        val sorted = this.sortedBy { it.first }
-        sorted.drop(1).fold(mutableListOf(sorted.first())) { reduced, range ->
-            val lastRange = reduced.last()
-            if (range.first <= lastRange.last)
-                reduced[reduced.lastIndex] = (lastRange.first..maxOf(lastRange.last, range.last))
-            else
-                reduced.add(range)
-            reduced
-        }
+val caveRange = (0..caveSize)
+val answer = this.sensors
+    .firstNotNullOf { sensor ->
+        val up = Point(sensor.x, sensor.y - sensor.distance!! - 1)
+        val down = Point(sensor.x, sensor.y + sensor.distance!! + 1)
+        val left = Point(sensor.x - sensor.distance!! - 1, sensor.y)
+        val right = Point(sensor.x + sensor.distance!! + 1, sensor.y)
+
+        val searchPoints = (up.lineTo(right) + right.lineTo(down) + down.lineTo(left) + left.lineTo(up))
+            .filter { it.x in caveRange && it.y in caveRange }
+            .toSet()
+
+        var solutions = searchPoints
+            .firstOrNull { candidate -> sensors.none { sensor -> sensor.distanceTo(candidate) <= sensor.distance!! } }
+
+        return@firstNotNullOf solutions
     }
 
-val final = ranges.toList().reduce().sumOf { it.last - it.first }
-println(final)
+println(answer)
+println(4000000L * answer.x + answer.y)
