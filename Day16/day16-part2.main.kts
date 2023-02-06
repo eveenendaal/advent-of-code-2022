@@ -1,4 +1,5 @@
 import java.io.File
+import kotlin.math.roundToInt
 
 data class Valve(val name: String, val rate: Int, var next: Set<String> = emptySet())
 
@@ -82,27 +83,58 @@ relevantValves.forEach {
     cachedCosts[it.name] = it.calcCosts()
 }
 
-queue.forEach { states ->
-    val sortedStates = states.toList().sortedBy { it.timeLeft }.reversed()
-    val state = sortedStates.first()
+fun State.benefit(valve: String): Int {
+    return if (this.timeLeft >= this.cost((valve))) {
+        (this.timeLeft - this.cost(valve)) * valves[valve]!!.rate
+    } else {
+        0
+    }
+}
 
-    val costs = cachedCosts[state.lastValve().name]!!
+fun State.cost(valve: String): Int {
+    val costs = cachedCosts[this.lastValve().name]!!
+    return costs[valve]!!
+}
+
+queue.forEach { states ->
     val openedValves = (states.first.history + states.second.history).toSet()
 
     val remainingValves = relevantValves
         .filter { !openedValves.contains(it.name) }
-        .filter { costs[it.name]!! <= state.timeLeft }
-        .map { Pair(it, costs[it.name]!!) }
+        .filter { states.first.timeLeft >= states.first.cost(it.name) || states.second.timeLeft >= states.second.cost(it.name) }
 
     if (remainingValves.isNotEmpty()) {
-        remainingValves.forEach {
-            val timeLeft = state.timeLeft - it.second
-            val newState = State(
-                timeLeft,
-                (timeLeft * it.first.rate) + state.pressureTotal,
-                state.history + it.first.name
+        var benefits = states.toList()
+            .flatMap { state -> remainingValves.map { state.benefit(it.name) } }
+            .toSet()
+            .sorted()
+            .reversed()
+
+        benefits = benefits.subList(0, listOf(1, (benefits.size.toDouble() / 3).roundToInt()).max())
+
+        val sortedRemainingValves = remainingValves.filter {
+            benefits.contains(states.first.benefit(it.name)) || benefits.contains(states.second.benefit(it.name))
+        }
+
+        sortedRemainingValves.forEach {
+            queue.add(
+                Pair(
+                    State(
+                        states.first.timeLeft - states.first.cost(it.name),
+                        states.first.benefit(it.name) + states.first.pressureTotal,
+                        states.first.history + it.name
+                    ), states.second
+                )
             )
-            queue.add(Pair(newState, sortedStates.last()))
+            queue.add(
+                Pair(
+                    State(
+                        states.second.timeLeft - states.second.cost(it.name),
+                        states.second.benefit(it.name) + states.second.pressureTotal,
+                        states.second.history + it.name
+                    ), states.first
+                )
+            )
         }
     } else {
         val total = states.first.pressureTotal + states.second.pressureTotal
